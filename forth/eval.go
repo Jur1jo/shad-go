@@ -24,7 +24,7 @@ func (e *Evaluator) eval(op string) func(e *Evaluator) error {
 	}
 }
 
-func (op operation) eval(e *Evaluator) error {
+func (op *operation) eval(e *Evaluator) error {
 	for _, f := range op.f {
 		err := f(e)
 		if err != nil {
