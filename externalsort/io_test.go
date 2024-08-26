@@ -4,12 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"github.com/stretchr/testify/require"
 	"io"
 	"strings"
 	"testing"
 	"testing/iotest"
-
-	"github.com/stretchr/testify/require"
 )
 
 func newStringReader(s string) LineReader {
@@ -52,19 +51,13 @@ func TestLineReader(t *testing.T) {
 			expected: []string{"abc"},
 		},
 		{
-			name: "linebreak",
-			in: `abc
-
-`,
+			name:     "linebreak",
+			in:       "abc\n\n",
 			expected: []string{"abc", ""},
 		},
 		{
-			name: "multiple-rows",
-			in: `a
-
-b
-b
-`,
+			name:     "multiple-rows",
+			in:       "a\n\nb\nb\n",
 			expected: []string{"a", "", "b", "b"},
 		},
 		{
@@ -89,6 +82,11 @@ b
 			wrappers: []Wrapper{iotest.DataErrReader},
 			expected: []string{strings.Repeat("a", 1025)},
 		},
+		{
+			name:     "only-eoln",
+			in:       "\n\n",
+			expected: []string{"", ""},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var r io.Reader
@@ -101,7 +99,6 @@ b
 
 			lines, err := readAll(lineReader)
 			require.NoError(t, err)
-
 			require.Len(t, lines, len(tc.expected),
 				"expected: %+v, got: %+v", tc.expected, lines)
 			require.Equal(t, tc.expected, lines)
@@ -164,6 +161,7 @@ func TestLineWriter(t *testing.T) {
 
 			require.NoError(t, w.Flush())
 			expected := strings.Join(tc.lines, "\n") + "\n"
+			//fmt.Println([]byte(expected), ",", []byte(buf.String())
 			require.Equal(t, expected, buf.String())
 		})
 	}
